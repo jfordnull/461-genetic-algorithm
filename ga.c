@@ -119,7 +119,7 @@ float calculate_fitness(Individual *individual){
     int facilitator_load[NUM_FACILITATORS] = {0};
     for(int i = 0; i < NUM_ACTIVITES; i++){
         Gene gene = individual->chromosome[i];
-        Activity activity = activites[gene.activity_id];
+        Activity activity = activites[i];
         Room room = rooms[gene.room_id];
 
         // Capacity
@@ -143,7 +143,62 @@ float calculate_fitness(Individual *individual){
 
         facilitator_load[gene.facilitator_id]++;
     }
-    
+
+    // Facilitator load
+    for(int i = 0; i < NUM_FACILITATORS; i++){
+        if(facilitator_load[i] > 4) fitness -= 0.5;
+        else if(i != 7 && facilitator_load[i] < 3) fitness -= 0.4;
+    }
+
+    // Activity-specific adjustments
+    int SLA101A_time = individual->chromosome[0].time_slot;
+    int SLA101B_time = individual->chromosome[1].time_slot;
+    int SLA191A_time = individual->chromosome[2].time_slot;
+    int SLA191B_time = individual->chromosome[3].time_slot;
+    int SLA101A_room = individual->chromosome[0].room_id;
+    int SLA101B_room = individual->chromosome[1].room_id;
+    int SLA191A_room = individual->chromosome[2].room_id;
+    int SLA191B_room = individual->chromosome[3].room_id;
+
+    // 101 or 191 sections more than 4 hours apart
+    if (abs(SLA101A_time - SLA101B_time) > 4) fitness += 0.5;
+    else if (SLA101A_time == SLA101B_time) fitness -= 0.5;
+    if (abs(SLA191A_time - SLA191B_time) > 4) fitness += 0.5;
+    else if (SLA191A_time == SLA191B_time) fitness -= 0.5;
+
+    // Check if 101 and 191 in consecutive time slots
+    int is_consecutive = 0;
+    if (abs(SLA101A_time - SLA191A_time) == 1 || abs(SLA101A_time - SLA191B_time) == 1 ||
+        abs(SLA101B_time - SLA191A_time) == 1 || abs(SLA101B_time - SLA191B_time) == 1){
+        fitness += 0.5;
+        is_consecutive = 1;
+    }
+
+    if (is_consecutive) {
+        // Either activity in Roman (1, 3) or Beach (5, 6)
+        int SLA101_in_roman_or_beach = (SLA101A_room == 1 || SLA101A_room == 3 || SLA101A_room == 5 || SLA101A_room == 6 ||
+                                    SLA101B_room == 1 || SLA101B_room == 3 || SLA101B_room == 5 || SLA101B_room == 6);
+        int SLA191_in_roman_or_beach = (SLA191A_room == 1 || SLA191A_room == 3 || SLA191A_room == 5 || SLA191A_room == 6 ||
+                                    SLA191B_room == 1 || SLA191B_room == 3 || SLA191B_room == 5 || SLA191B_room == 6);
+
+        // Apply penalty if one in Roman/Beach and other is not
+        if ((SLA101_in_roman_or_beach && !SLA191_in_roman_or_beach) ||
+            (!SLA101_in_roman_or_beach && SLA191_in_roman_or_beach)) {
+            fitness -= 0.4;
+        }
+    }
+
+    // 101 and 191 separated by exactly one hour
+    if (abs(SLA101A_time - SLA191A_time) == 2 || abs(SLA101A_time - SLA191B_time) == 2 ||
+        abs(SLA101B_time - SLA191A_time) == 2 || abs(SLA101B_time - SLA191B_time) == 2) {
+        fitness += 0.25;
+    }
+
+    // 101 and 191 in same time slot
+    if (SLA101A_time == SLA191A_time || SLA101A_time == SLA191B_time ||
+        SLA101B_time == SLA191A_time || SLA101B_time == SLA191B_time) {
+        fitness -= 0.25;
+    }
 }
 
 void initialize_individual(Individual* individual){
