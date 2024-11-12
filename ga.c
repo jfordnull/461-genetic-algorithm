@@ -116,6 +116,7 @@ char times[][6] = {
 
 float calculate_fitness(Individual *individual){
     float fitness = 0.0;
+    int facilitator_load[NUM_FACILITATORS] = {0};
     for(int i = 0; i < NUM_ACTIVITES; i++){
         Gene gene = individual->chromosome[i];
         Activity activity = activites[gene.activity_id];
@@ -131,7 +132,18 @@ float calculate_fitness(Individual *individual){
         if(activity.preferred_facilitators[gene.facilitator_id]) fitness += 0.5;
         else if(activity.other_facilitators[gene.facilitator_id]) fitness += 0.2;
         else fitness -= 0.1;
+
+        // Conflict checks
+        for(int j = i + 1; j < NUM_ACTIVITES; j++){
+            Gene other_gene = individual->chromosome[j];
+            if(gene.room_id == other_gene.room_id && gene.time_slot == other_gene.time_slot) fitness -= 0.5;
+            if(gene.facilitator_id == other_gene.facilitator_id && gene.time_slot == other_gene.time_slot) fitness -= 0.2;
+            else fitness += 0.2;
+        }
+
+        facilitator_load[gene.facilitator_id]++;
     }
+    
 }
 
 void initialize_individual(Individual* individual){
