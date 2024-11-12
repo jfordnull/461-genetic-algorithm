@@ -117,7 +117,20 @@ char times[][6] = {
 float calculate_fitness(Individual *individual){
     float fitness = 0.0;
     for(int i = 0; i < NUM_ACTIVITES; i++){
-        
+        Gene gene = individual->chromosome[i];
+        Activity activity = activites[gene.activity_id];
+        Room room = rooms[gene.room_id];
+
+        // Capacity
+        if(room.capacity < activity.expected_enrollment) fitness -= 0.5;
+        else if(room.capacity > activity.expected_enrollment * 6) fitness -= 0.4;
+        else if(room.capacity > activity.expected_enrollment * 3) fitness -= 0.2;
+        else fitness += 0.3;
+
+        // Preferred facilitator
+        if(activity.preferred_facilitators[gene.facilitator_id]) fitness += 0.5;
+        else if(activity.other_facilitators[gene.facilitator_id]) fitness += 0.2;
+        else fitness -= 0.1;
     }
 }
 
