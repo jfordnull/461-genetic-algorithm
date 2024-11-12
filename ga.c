@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #define POPULATION_SIZE 500
 #define NUM_GENERATIONS 100
@@ -112,3 +113,23 @@ char times[][6] = {
     "2 PM",
     "3 PM"
 };
+
+float calculate_fitness(Individual *individual){
+    float fitness = 0.0;
+    for(int i = 0; i < NUM_ACTIVITES; i++){
+        
+    }
+}
+
+void initialize_individual(Individual* individual){
+    for(int i = 0; i < NUM_ACTIVITES; i++){
+        individual->chromosome[i].activity_id = i;
+        individual->chromosome[i].room_id = rand() % NUM_ROOMS;
+        individual->chromosome[i].time_slot = rand() % NUM_TIMES;
+        individual->chromosome[i].facilitator_id = rand() % NUM_FACILITATORS;
+    }
+    individual->fitness = calculate_fitness(individual);
+}
+
+void mutate(Individual *individual);
+void crossover(Individual *parent1, Individual *parent2, Individual *child);
