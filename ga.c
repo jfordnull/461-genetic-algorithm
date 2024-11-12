@@ -3,15 +3,16 @@
 #define POPULATION_SIZE 500
 #define NUM_GENERATIONS 100
 #define MUTATION_RATE 0.1
-#define NUM_ACTIVITES 10
+#define NUM_ACTIVITES 11
 #define NUM_ROOMS 9
 #define NUM_TIMES 6
 #define NUM_FACILITATORS 10
 
 typedef struct {
+    char name[8];
     int expected_enrollment;
-    //Preferred Facilitators
-    //Other Facilitators
+    int preferred_facilitators[NUM_FACILITATORS];
+    int other_facilitators[NUM_FACILITATORS];
 } Activity;
 
 typedef struct {
@@ -27,11 +28,11 @@ typedef struct {
 } Gene;
 
 typedef struct {
-    //Array of assignments
+    Gene chromosome[NUM_ACTIVITES];
     float fitness;
 } Individual;
 
-char facilitators[10][9] = {
+char facilitators[][9] = {
     "Lock",
     "Glen",
     "Banks",
@@ -42,6 +43,53 @@ char facilitators[10][9] = {
     "Tyler",
     "Numen",
     "Zeldin"
+};
+
+Activity activites[] = {
+    {"SLA100A", 50, 
+        {1, 1, 1, 0, 0, 0, 0, 0, 0, 1},
+        {0, 0, 0, 1, 0, 0, 0, 0, 1, 0}
+    },
+    {"SLA100B", 50,
+        {1, 1, 1, 0, 0, 0, 0, 0, 0, 1},
+        {0, 0, 0, 1, 0, 0, 0, 0, 1, 0}
+    },
+    {"SLA191A", 50,
+        {1, 1, 1, 0, 0, 0, 0, 0, 0, 1},
+        {0, 0, 0, 1, 0, 0, 0, 0, 1, 0}
+    },
+    {"SLA191B", 50,
+        {1, 1, 1, 0, 0, 0, 0, 0, 0, 1},
+        {0, 0, 0, 1, 0, 0, 0, 0, 1, 0}
+    },
+    {"SLA201", 50,
+        {0, 1, 1, 0, 1, 0, 0, 0, 0, 1},
+        {0, 0, 0, 1, 0, 1, 0, 0, 1, 0}
+    },
+    {"SLA291", 50,
+        {1, 0, 1, 0, 0, 1, 0, 0, 0, 1},
+        {0, 0, 0, 1, 1, 0, 0, 1, 1, 0}
+    },
+    {"SLA303", 60,
+        {0, 1, 1, 0, 0, 0, 0, 0, 0, 1},
+        {0, 0, 0, 0, 1, 1, 0, 0, 1, 0}
+    },
+    {"SLA304", 25,
+        {0, 1, 1, 0, 0, 0, 0, 1, 0, 0},
+        {0, 0, 0, 1, 1, 1, 1, 0, 1, 1}
+    },
+    {"SLA394", 20,
+        {0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
+        {0, 0, 0, 1, 0, 0, 0, 0, 0, 1}
+    },
+    {"SLA449", 60,
+        {0, 0, 0, 0, 1, 1, 0, 1, 0, 0},
+        {0, 0, 0, 0, 0, 0, 1, 0, 0, 1}
+    },
+    {"SLA451", 100,
+        {0, 0, 0, 0, 1, 1, 0, 1, 0, 0},
+        {0, 0, 1, 1, 0, 0, 1, 0, 0, 1}
+    }
 };
 
 Room rooms[] = {
@@ -56,5 +104,11 @@ Room rooms[] = {
     {"Frank 119", 60}
 };
 
-
-
+char times[][6] = {
+    "10 AM",
+    "11 AM",
+    "12 PM",
+    "1 PM",
+    "2 PM",
+    "3 PM"
+};
