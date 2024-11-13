@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define POPULATION_SIZE 500
 #define NUM_GENERATIONS 100
 #define MUTATION_RATE 0.1
-#define NUM_ACTIVITES 11
+#define NUM_ACTIVITIES 11
 #define NUM_ROOMS 9
 #define NUM_TIMES 6
 #define NUM_FACILITATORS 10
@@ -29,7 +30,7 @@ typedef struct {
 } Gene;
 
 typedef struct {
-    Gene chromosome[NUM_ACTIVITES];
+    Gene chromosome[NUM_ACTIVITIES];
     float fitness;
 } Individual;
 
@@ -46,7 +47,7 @@ char facilitators[][9] = {
     "Zeldin"
 };
 
-Activity activites[] = {
+Activity activities[] = {
     {"SLA100A", 50, 
         {1, 1, 1, 0, 0, 0, 0, 0, 0, 1},
         {0, 0, 0, 1, 0, 0, 0, 0, 1, 0}
@@ -117,9 +118,9 @@ char times[][6] = {
 float calculate_fitness(Individual *individual){
     float fitness = 0.0;
     int facilitator_load[NUM_FACILITATORS] = {0};
-    for(int i = 0; i < NUM_ACTIVITES; i++){
+    for(int i = 0; i < NUM_ACTIVITIES; i++){
         Gene gene = individual->chromosome[i];
-        Activity activity = activites[i];
+        Activity activity = activities[i];
         Room room = rooms[gene.room_id];
 
         // Capacity
@@ -134,7 +135,7 @@ float calculate_fitness(Individual *individual){
         else fitness -= 0.1;
 
         // Conflict checks
-        for(int j = i + 1; j < NUM_ACTIVITES; j++){
+        for(int j = i + 1; j < NUM_ACTIVITIES; j++){
             Gene other_gene = individual->chromosome[j];
             if(gene.room_id == other_gene.room_id && gene.time_slot == other_gene.time_slot) fitness -= 0.5;
             if(gene.facilitator_id == other_gene.facilitator_id && gene.time_slot == other_gene.time_slot) fitness -= 0.2;
@@ -199,10 +200,12 @@ float calculate_fitness(Individual *individual){
         SLA101B_time == SLA191A_time || SLA101B_time == SLA191B_time) {
         fitness -= 0.25;
     }
+
+    return fitness;
 }
 
 void initialize_individual(Individual *individual){
-    for(int i = 0; i < NUM_ACTIVITES; i++){
+    for(int i = 0; i < NUM_ACTIVITIES; i++){
         individual->chromosome[i].activity_id = i;
         individual->chromosome[i].room_id = rand() % NUM_ROOMS;
         individual->chromosome[i].time_slot = rand() % NUM_TIMES;
@@ -227,7 +230,7 @@ void population_heapify(Individual *population, int size, int index){
 }
 
 void crossover(Individual *parent1, Individual *parent2, Individual *child){
-    for(int i = 0; i < NUM_ACTIVITES; i++){
+    for(int i = 0; i < NUM_ACTIVITIES; i++){
         if(rand() % 2) child->chromosome[i] = parent1->chromosome[i];
         else child->chromosome[i] = parent2->chromosome[i];
     }
@@ -235,7 +238,7 @@ void crossover(Individual *parent1, Individual *parent2, Individual *child){
 }
 
 void mutate(Individual *individual){
-    for(int i = 0; i < NUM_ACTIVITES; i++){
+    for(int i = 0; i < NUM_ACTIVITIES; i++){
         if((float)rand() / RAND_MAX < MUTATION_RATE){
             individual->chromosome[i].room_id = rand() % NUM_ROOMS;
             individual->chromosome[i].time_slot = rand() % NUM_TIMES;
@@ -269,6 +272,26 @@ void initialize_population(Individual *population){
     for(int i = POPULATION_SIZE / 2 - 1; i >= 0; i--) population_heapify(population, POPULATION_SIZE, i);
 }
 
+void display_individual(Individual *individual) {
+    printf("Schedule (Fitness = %.2f):\n", individual->fitness);
+    printf("--------------------------------------------------------\n");
+    printf("| %-10s | %-10s | %-8s | %-10s |\n", "Activity", "Room", "Time", "Facilitator");
+    printf("--------------------------------------------------------\n");
+    for (int i = 0; i < NUM_ACTIVITIES; i++) {
+        int activity_id = individual->chromosome[i].activity_id;
+        int room_id = individual->chromosome[i].room_id;
+        int time_slot = individual->chromosome[i].time_slot;
+        int facilitator_id = individual->chromosome[i].facilitator_id;
+        printf("| %-10s | %-10s | %-8s | %-10s |\n",
+               activities[activity_id].name,
+               rooms[room_id].name,
+               times[time_slot],
+               facilitators[facilitator_id]);
+    }
+    printf("--------------------------------------------------------\n");
+}
+
+
 void genetic_algorithm(){
     Individual population[POPULATION_SIZE];
     initialize_population(population);
@@ -284,5 +307,25 @@ void genetic_algorithm(){
             mutate(&child);
             insert_individual(population, &headcount, child);
         }
+        float best_fitness = population[0].fitness;
+        for(int i = 1; i < POPULATION_SIZE; i++){
+            if(population[i].fitness > best_fitness) best_fitness = population[i].fitness;
+        }
+        printf("Generation %d: Best Fitness = %.2f\n", generation, best_fitness);
     }
+    
+    Individual *fittest_individual = &population[0];
+    for (int i = 1; i < POPULATION_SIZE; i++) {
+        if (population[i].fitness > fittest_individual->fitness) {
+            fittest_individual = &population[i];
+        }
+    }
+    printf("\nFinal Generation - Fittest Individual\n");
+    display_individual(fittest_individual);
+}
+
+int main(){
+    srand(time(NULL));
+    genetic_algorithm();
+    return 0;
 }
