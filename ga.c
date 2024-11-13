@@ -245,7 +245,7 @@ void mutate(Individual *individual){
     individual->fitness = calculate_fitness(individual);
 }
 
-// Replace root of heap with last individual heapify (sift down)
+// Replace root of heap with last individual and heapify (sift down)
 void cull(Individual *population, int *size){
     population[0] = population[--(*size)];
     population_heapify(population, *size, 0);
@@ -263,12 +263,26 @@ void insert_individual(Individual *population, int *size, Individual individual)
     population[i] = individual;
 }
 
-void genetic_algorithm(){
-
+void initialize_population(Individual *population){
+    for(int i = 0; i < POPULATION_SIZE; i++) initialize_individual(&population[i]);
+    // Construct heap (POPSIZE / 2 - 1 starts at middle of heap, above leaf nodes, and moves toward root heapifying)
+    for(int i = POPULATION_SIZE / 2 - 1; i >= 0; i--) population_heapify(population, POPULATION_SIZE, i);
 }
 
-// void initialize_population(Individual population[]){
-//     for(int i = 0; i < POPULATION_SIZE; i++) initialize_individual(&population[i]);
-// }
+void genetic_algorithm(){
+    Individual population[POPULATION_SIZE];
+    initialize_population(population);
+    int headcount = POPULATION_SIZE;
 
-
+    for(int generation = 0; generation < NUM_GENERATIONS; generation++){
+        for(int i = 0; i < POPULATION_SIZE; i++){
+            cull(population, &headcount);
+            Individual parent1 = population[rand() % headcount];
+            Individual parent2 = population[rand() % headcount];
+            Individual child;
+            crossover(&parent1, &parent2, &child);
+            mutate(&child);
+            insert_individual(population, &headcount, child);
+        }
+    }
+}
