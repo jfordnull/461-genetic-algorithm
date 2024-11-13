@@ -211,5 +211,26 @@ void initialize_individual(Individual* individual){
     individual->fitness = calculate_fitness(individual);
 }
 
+void population_heapify(Individual *population, int index){
+    int smallest = index;
+    int left = 2 * index + 1;
+    int right = 2 * index + 2;
+
+    if(left < POPULATION_SIZE && population[left].fitness < population[smallest].fitness) smallest = left;
+    if(right < POPULATION_SIZE && population[right].fitness < population[smallest].fitness) smallest = right;
+    if(smallest != index){
+        Individual temp = population[index];
+        population[index] = population[smallest];
+        population[smallest] = temp;
+        population_heapify(population, smallest);
+    }
+}
+
+
+
+// void initialize_population(Individual population[]){
+//     for(int i = 0; i < POPULATION_SIZE; i++) initialize_individual(&population[i]);
+// }
+
 void mutate(Individual *individual);
 void crossover(Individual *parent1, Individual *parent2, Individual *child);
