@@ -201,7 +201,7 @@ float calculate_fitness(Individual *individual){
     }
 }
 
-void initialize_individual(Individual* individual){
+void initialize_individual(Individual *individual){
     for(int i = 0; i < NUM_ACTIVITES; i++){
         individual->chromosome[i].activity_id = i;
         individual->chromosome[i].room_id = rand() % NUM_ROOMS;
@@ -211,18 +211,18 @@ void initialize_individual(Individual* individual){
     individual->fitness = calculate_fitness(individual);
 }
 
-void population_heapify(Individual *population, int index){
+void population_heapify(Individual *population, int size, int index){
     int smallest = index;
-    int left = 2 * index + 1;
-    int right = 2 * index + 2;
+    int left = 2 * index + 1; // Left child
+    int right = 2 * index + 2; // Right child
 
-    if(left < POPULATION_SIZE && population[left].fitness < population[smallest].fitness) smallest = left;
-    if(right < POPULATION_SIZE && population[right].fitness < population[smallest].fitness) smallest = right;
+    if(left < size && population[left].fitness < population[smallest].fitness) smallest = left;
+    if(right < size && population[right].fitness < population[smallest].fitness) smallest = right;
     if(smallest != index){
         Individual temp = population[index];
         population[index] = population[smallest];
         population[smallest] = temp;
-        population_heapify(population, smallest);
+        population_heapify(population, size, smallest);
     }
 }
 
@@ -245,6 +245,27 @@ void mutate(Individual *individual){
     individual->fitness = calculate_fitness(individual);
 }
 
+// Replace root of heap with last individual heapify (sift down)
+void cull(Individual *population, int *size){
+    population[0] = population[--(*size)];
+    population_heapify(population, *size, 0);
+}
+
+// Insert individual at end of tree and sift up
+void insert_individual(Individual *population, int *size, Individual individual){
+    (*size)++;
+    int i = *size - 1;
+    // (i - 1)/2 : Parent
+    while(i > 0 && population[(i - 1)/2].fitness > individual.fitness){
+        population[i] = population[(i - 1)/2];
+        i = (i - 1)/2;
+    }
+    population[i] = individual;
+}
+
+void genetic_algorithm(){
+
+}
 
 // void initialize_population(Individual population[]){
 //     for(int i = 0; i < POPULATION_SIZE; i++) initialize_individual(&population[i]);
