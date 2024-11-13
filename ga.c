@@ -226,11 +226,28 @@ void population_heapify(Individual *population, int index){
     }
 }
 
+void crossover(Individual *parent1, Individual *parent2, Individual *child){
+    for(int i = 0; i < NUM_ACTIVITES; i++){
+        if(rand() % 2) child->chromosome[i] = parent1->chromosome[i];
+        else child->chromosome[i] = parent2->chromosome[i];
+    }
+    child->fitness = calculate_fitness(child);
+}
+
+void mutate(Individual *individual){
+    for(int i = 0; i < NUM_ACTIVITES; i++){
+        if((float)rand() / RAND_MAX < MUTATION_RATE){
+            individual->chromosome[i].room_id = rand() % NUM_ROOMS;
+            individual->chromosome[i].time_slot = rand() % NUM_TIMES;
+            individual->chromosome[i].facilitator_id = rand() % NUM_FACILITATORS;
+        }
+    }
+    individual->fitness = calculate_fitness(individual);
+}
 
 
 // void initialize_population(Individual population[]){
 //     for(int i = 0; i < POPULATION_SIZE; i++) initialize_individual(&population[i]);
 // }
 
-void mutate(Individual *individual);
-void crossover(Individual *parent1, Individual *parent2, Individual *child);
+
